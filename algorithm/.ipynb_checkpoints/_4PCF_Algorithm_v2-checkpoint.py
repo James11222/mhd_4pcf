@@ -350,7 +350,7 @@ class measure_4pcf(object):
         else:
             raise AssertionError("You need to run self.calc_ft_data() first")
 
-    def calc_zeta(self, normalize=True):
+    def calc_zeta(self, normalize=True, odd_parity=False):
         """
         This is the the big calculation for measuring the 4PCF coefficients.
         This code is adapted from Philcox et al. 2021 (Encore Paper)
@@ -391,55 +391,100 @@ class measure_4pcf(object):
         for l_1 in range(0,ell_max+1):
             for l_2 in range(0,ell_max+1):
                 for l_3 in range(np.abs(l_1 - l_2), min(l_1 + l_2, ell_max)+1):
-                    if (l_1 + l_2 + l_3)%2 != 0: # we don't assume this to be true for Turbulent ISM
-                        continue
-                    for m_1 in range(-l_1, l_1 + 1):
-                        for m_2 in range(-l_2, l_2 + 1):
-                            m_3 = -m_1 - m_2
-                            if m_3 > l_3 or m_3 < 0:
-                                continue
-                            coupling_w = self.density_field_data * (-1)**(l_1 + l_2 + l_3) * CG_Coefficients[l_1,l_2,l_3,m_1,m_2,m_3]
-                            for b_1 in range(0, nbins): #might be an error with indexing here
-                                if m_1 < 0:
-                                    a_lmb_1 = (-1)**m_1 * (np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+
-                                            str(l_1)+'_'+str(-m_1)+'_bin_'+str(b_1)+'.npy').astype(np.complex128)).conjugate() 
-#                                     
-                                else:
-                                    a_lmb_1 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_1)+
-                                                '_'+str(m_1)+'_bin_'+str(b_1)+'.npy').astype(np.complex128)
-#                                     
-                                for b_2 in range(b_1+1, nbins):#might be an error with indexing here
-                                    if m_2 < 0:
-                                        a_lmb_2 = (-1)**m_2 * (np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+
-                                                str(l_2)+'_'+str(-m_2)+'_bin_'+str(b_2)+'.npy').astype(np.complex128)).conjugate() 
-#                                         
+                    if odd_parity==False:
+                        if (l_1 + l_2 + l_3)%2 != 0: 
+                            continue
+                        for m_1 in range(-l_1, l_1 + 1):
+                            for m_2 in range(-l_2, l_2 + 1):
+                                m_3 = -m_1 - m_2
+                                if m_3 > l_3 or m_3 < 0:
+                                    continue
+                                coupling_w = self.density_field_data * (-1)**(l_1 + l_2 + l_3) * CG_Coefficients[l_1,l_2,l_3,m_1,m_2,m_3]
+                                for b_1 in range(0, nbins): 
+                                    if m_1 < 0:
+                                        a_lmb_1 = (-1)**m_1 * (np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+
+                                                str(l_1)+'_'+str(-m_1)+'_bin_'+str(b_1)+'.npy').astype(np.complex128)).conjugate() 
+    #                                     
                                     else:
-                                        a_lmb_2 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_2)+
-                                                    '_'+str(m_2)+'_bin_'+str(b_2)+'.npy').astype(np.complex128)
-#                                         
-                                    for b_3 in range(b_2+1, nbins):#might be an error with indexing here
-                                        a_lmb_3 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_3)+
-                                                    '_'+str(m_3)+'_bin_'+str(b_3)+'.npy').astype(np.complex128)
-#                                        
-                                        zeta[l_1, l_2, l_3, b_1, b_2, b_3] += np.sum(2 * S(m_3) * 
-                                                                                coupling_w * 
-                                                                                np.real(a_lmb_1 * a_lmb_2 * a_lmb_3))
+                                        a_lmb_1 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_1)+
+                                                    '_'+str(m_1)+'_bin_'+str(b_1)+'.npy').astype(np.complex128)
+    #                                     
+                                    for b_2 in range(b_1+1, nbins):
+                                        if m_2 < 0:
+                                            a_lmb_2 = (-1)**m_2 * (np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+
+                                                    str(l_2)+'_'+str(-m_2)+'_bin_'+str(b_2)+'.npy').astype(np.complex128)).conjugate() 
+    #                                         
+                                        else:
+                                            a_lmb_2 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_2)+
+                                                        '_'+str(m_2)+'_bin_'+str(b_2)+'.npy').astype(np.complex128)
+    #                                         
+                                        for b_3 in range(b_2+1, nbins):
+                                            a_lmb_3 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_3)+
+                                                        '_'+str(m_3)+'_bin_'+str(b_3)+'.npy').astype(np.complex128)
+    #                                        
+                                            zeta[l_1, l_2, l_3, b_1, b_2, b_3] += np.sum(2 * S(m_3) * 
+                                                                                    coupling_w * 
+                                                                                    np.real(a_lmb_1 * a_lmb_2 * a_lmb_3))
+        
+                    elif odd_parity==True:
+                        for m_1 in range(-l_1, l_1 + 1):
+                            for m_2 in range(-l_2, l_2 + 1):
+                                m_3 = -m_1 - m_2
+                                if m_3 > l_3 or m_3 < 0:
+                                    continue
+                                coupling_w = self.density_field_data * (-1)**(l_1 + l_2 + l_3) * CG_Coefficients[l_1,l_2,l_3,m_1,m_2,m_3]
+                                for b_1 in range(0, nbins):
+                                    if m_1 < 0:
+                                        a_lmb_1 = (-1)**m_1 * (np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+
+                                                str(l_1)+'_'+str(-m_1)+'_bin_'+str(b_1)+'.npy').astype(np.complex128)).conjugate() 
+    #                                     
+                                    else:
+                                        a_lmb_1 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_1)+
+                                                    '_'+str(m_1)+'_bin_'+str(b_1)+'.npy').astype(np.complex128)
+    #                                     
+                                    for b_2 in range(b_1+1, nbins):
+                                        if m_2 < 0:
+                                            a_lmb_2 = (-1)**m_2 * (np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+
+                                                    str(l_2)+'_'+str(-m_2)+'_bin_'+str(b_2)+'.npy').astype(np.complex128)).conjugate() 
+    #                                         
+                                        else:
+                                            a_lmb_2 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_2)+
+                                                        '_'+str(m_2)+'_bin_'+str(b_2)+'.npy').astype(np.complex128)
+    #                                         
+                                        for b_3 in range(b_2+1, nbins):#might be an error with indexing here
+                                            a_lmb_3 = np.load(self.save_dir + self.save_name+'conv_data_kernel_'+self.kernel_name+'_'+str(l_3)+
+                                                        '_'+str(m_3)+'_bin_'+str(b_3)+'.npy').astype(np.complex128)
+    #                                        
+                                            zeta[l_1, l_2, l_3, b_1, b_2, b_3] += np.sum(2 * S(m_3) * 
+                                                                                    coupling_w * 
+                                                                                    np.real(a_lmb_1 * a_lmb_2 * a_lmb_3))
 
 
         for l1 in range(0,ell_max+1):
             for l2 in range(0,ell_max+1):
                 for l3 in range(np.abs(l1 - l2), min(l1 + l2, ell_max)+1):
-                    if (l1 + l2 + l3)%2 != 0: # we don't assume this to be true for Turbulent ISM
-                        continue
-                    for b1 in range(0,nbins):
-                        for b2 in range(b1+1,nbins):
-                            for b3 in range(b2+1,nbins):
-                                this_4pcf = zeta[l1,l2,l3,b1,b2,b3]
-                                zeta[l3,l1,l2,b3,b1,b2] = this_4pcf
-                                zeta[l2,l3,l1,b2,b3,b1] = this_4pcf
-                                zeta[l1,l3,l2,b1,b3,b2] = this_4pcf
-                                zeta[l2,l1,l3,b2,b1,b3] = this_4pcf
-                                zeta[l3,l2,l1,b3,b2,b1] = this_4pcf
+                    if odd_parity==False:
+                        if (l1 + l2 + l3)%2 != 0:
+                            continue
+                        for b1 in range(0,nbins):
+                            for b2 in range(b1+1,nbins):
+                                for b3 in range(b2+1,nbins):
+                                    this_4pcf = zeta[l1,l2,l3,b1,b2,b3]
+                                    zeta[l3,l1,l2,b3,b1,b2] = this_4pcf
+                                    zeta[l2,l3,l1,b2,b3,b1] = this_4pcf
+                                    zeta[l1,l3,l2,b1,b3,b2] = this_4pcf
+                                    zeta[l2,l1,l3,b2,b1,b3] = this_4pcf
+                                    zeta[l3,l2,l1,b3,b2,b1] = this_4pcf
+                    elif odd_parity==True:
+                        for b1 in range(0,nbins):
+                            for b2 in range(b1+1,nbins):
+                                for b3 in range(b2+1,nbins):
+                                    this_4pcf = zeta[l1,l2,l3,b1,b2,b3]
+                                    zeta[l3,l1,l2,b3,b1,b2] = this_4pcf
+                                    zeta[l2,l3,l1,b2,b3,b1] = this_4pcf
+                                    zeta[l1,l3,l2,b1,b3,b2] = this_4pcf
+                                    zeta[l2,l1,l3,b2,b1,b3] = this_4pcf
+                                    zeta[l3,l2,l1,b3,b2,b1] = this_4pcf
                                 
         
         finish=time.time()
@@ -453,29 +498,15 @@ class measure_4pcf(object):
             Normalize zeta^L_B (where L = {\ell_1, \ell_2, \ell_3} and B = {b_1, b_2, b_3}) hat
             coefficients from calc_zeta by dividing by bin volume
             """
-            #binvolume = self.boundsandnumber[1,0:nbins]
-            #normalize_coeff = (binvolume[:,None, None] * binvolume[None,:, None] * binvolume[None, None, :])
             normalize_coeff = (4.*np.pi)**(3.)
             self.zeta_normed_values = (normalize_coeff*zeta/((self.ld_one_d**3)))
         else: 
             print("your zeta coefficients are not normalized. To do so, please run")
             self.zeta_values = zeta    
 
-
-#     def normalize_zeta(self):
-#         """
-#         Normalize zeta^L_B (where L = {\ell_1, \ell_2, \ell_3} and B = {b_1, b_2, b_3}) hat
-#         coefficients from calc_zeta by dividing by bin volume
-#         """
-#         if hasattr(self, 'zeta_values'):
-#             binvolume = self.boundsandnumber[1,0:self.nbins]
-#             normalize_coeff = (binvolume[:,None, None] * binvolume[None,:, None] * binvolume[None, None, :])
-#             self.zeta_normed_values = (zeta/(normalize_coeff*(self.ld_one_d**3)))
-#         else:
-#             raise AssertionError("You already normalized zeta!")
             
             
-    def run_all(self,calc_ylm_flag=False, bin_ylm_flag=False, alm_flag=False, verbose_flag=True):
+    def run_all(self,calc_ylm_flag=False, bin_ylm_flag=False, alm_flag=False, verbose_flag=True, odd_parity==False):
         """
         The flag arguments indicate what you have already calculated. 
         You may want to skip the ylm or alm creation steps if you've 
@@ -495,33 +526,33 @@ class measure_4pcf(object):
             if bin_ylm_flag:
                 if alm_flag:
                     self.kernel_name = self.save_name
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
                 else:
                     self.calc_a_lm_coeffs(verbose=verbose_flag, kernel_name=self.save_name)
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
             else:
                 self.bin_spherical_harmonics(verbose=verbose_flag)
                 if alm_flag:
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
                 else:
                     self.calc_a_lm_coeffs(verbose=verbose_flag, kernel_name=self.save_name)
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
               
         else:
             self.calc_and_save_YLMs()
             if bin_ylm_flag:
                 if alm_flag:
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
                 else:
                     self.calc_a_lm_coeffs(verbose=verbose_flag, kernel_name=self.save_name)
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
             else:
                 self.bin_spherical_harmonics(verbose=verbose_flag)
                 if alm_flag:
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
                 else:
                     self.calc_a_lm_coeffs(verbose=verbose_flag, kernel_name=self.save_name)
-                    self.calc_zeta()
+                    self.calc_zeta(odd_parity=odd_parity)
     
     def save_zeta(self):
         """

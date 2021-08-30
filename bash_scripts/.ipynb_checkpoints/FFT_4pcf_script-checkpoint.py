@@ -18,7 +18,8 @@ print("Importing necessary libraries and packages")
 # file_name = run_name +'.fits.gz'
 
 file_list = ['dens_t800_b.1p.1', 'dens_t800_b.1p1', 'dens_t800_b1p.1', 'dens_t800_b1p1']
-
+# file_list = ['dens_t800_0', 'dens_t800_1', 'dens_t800_2', 'dens_t800_3']
+# data_dir = 'MHD_Sims_Data/'
 run_name = file_list[int(sys.argv[1])]
 print(sys.argv[1] + '--' + run_name)
 file_name =os.getcwd() + '/data/' + run_name +'.fits.gz'
