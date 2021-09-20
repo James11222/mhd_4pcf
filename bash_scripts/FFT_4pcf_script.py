@@ -22,7 +22,7 @@ file_names = ['dens_' + time_files[i]+'.fits.gz' for i in range(len(time_folders
 mhd_index = int(sys.argv[1])
 time_index = int(sys.argv[2])
 
-file_name =os.getcwd() + '/data/users.flatironinstitute.org/~bburkhart/data/CATS/MHD/256/' + mhd_folders[mhd_index] + time_folders[time_index] + file_names[time_index]
+file_name =os.getcwd() + '../data/users.flatironinstitute.org/~bburkhart/data/CATS/MHD/256/' + mhd_folders[mhd_index] + time_folders[time_index] + file_names[time_index]
 
 print(file_name)
 hdulist = pyf.open(file_name)
