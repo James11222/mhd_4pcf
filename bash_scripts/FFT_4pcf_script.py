@@ -10,19 +10,21 @@ print("Importing necessary libraries and packages")
 ############################################################################
 
 # an example of what you should type in the terminal is
-#python3 FFT_4pcf_script.py run_name_index nbins resolution ell_max bin_min bin_max
+#python3 FFT_4pcf_script.py mhd_index time_index  nbins resolution ell_max bin_min bin_max
 
 ############################################################################
 
-# run_name = 'dens_t800' #take in from command line arg
-# file_name = run_name +'.fits.gz'
+mhd_folders = ['b1p1/', 'b1p.1/', 'b.1,p1/', 'b.1p.1/'] #mhd_index 0-3
+time_folders = ['t_500/','t_550/','t_600/','t_650/','t_700/','t_750/','t_800/','t_850/','t_900/'] #time_index 0-8
+time_files = ['t500','t550','t600','t650','t700','t750','t800','t850','t900'] #time_index 0-8
+file_names = ['dens_' + time_files[i]+'.fits.gz' for i in range(len(time_folders))]
 
-file_list = ['dens_t800_b.1p.1', 'dens_t800_b.1p1', 'dens_t800_b1p.1', 'dens_t800_b1p1']
+mhd_index = int(sys.argv[1])
+time_index = int(sys.argv[2])
 
-run_name = file_list[int(sys.argv[1])]
-print(sys.argv[1] + '--' + run_name)
-file_name =os.getcwd() + '/data/' + run_name +'.fits.gz'
+file_name =os.getcwd() + '/data/users.flatironinstitute.org/~bburkhart/data/CATS/MHD/256/' + mhd_folders[mhd_index] + time_folders[time_index] + file_names[time_index]
 
+print(file_name)
 hdulist = pyf.open(file_name)
 data = hdulist[0].data.astype(np.float64)
 
@@ -32,7 +34,7 @@ data = data - np.mean(data)
 ############################################################################
 
 
-nbins, resolution, ell_max, bin_min, bin_max = int(sys.argv[2]),int(sys.argv[3]),int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6])
+nbins, resolution, ell_max, bin_min, bin_max = int(sys.argv[3]),int(sys.argv[4]),int(sys.argv[5]), int(sys.argv[6]), int(sys.argv[7])
 
 # make sure to create an FFT_Files directory inside your current directory of running this
 save_dir = os.getcwd() + '/FFT_Files/'
